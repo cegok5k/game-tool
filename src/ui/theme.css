@@ -1,0 +1,131 @@
+:root {
+  /* Body backdrop — deep gradient with subtle blooms */
+  --bg-gradient:
+    radial-gradient(900px 600px at 20% 10%, rgba(124, 106, 247, 0.18) 0%, transparent 60%),
+    radial-gradient(700px 500px at 80% 95%, rgba(96, 165, 250, 0.10) 0%, transparent 60%),
+    linear-gradient(135deg, #0d0d1a 0%, #0a0a14 60%, #100c1f 100%);
+
+  /* The opaque area behind the game iframe — solid so the game renders crisp */
+  --bg-app:      #0a0a14;
+  --bg-canvas:   #0a0a14;
+
+  /* Glass surfaces */
+  --glass-1:     rgba(255, 255, 255, 0.04);  /* default panel */
+  --glass-2:     rgba(255, 255, 255, 0.06);  /* elevated / hover */
+  --glass-3:     rgba(255, 255, 255, 0.08);  /* selected / active */
+  --glass-input: rgba(0, 0, 0, 0.30);        /* inputs sink instead of float */
+  --glass-blur:  blur(14px) saturate(140%);
+
+  /* Borders — very subtle on glass */
+  --border:        rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-focus:  rgba(167, 139, 250, 0.60);
+
+  /* Accents */
+  --accent:          #a78bfa;
+  --accent-strong:   #7c6af7;
+  --accent-soft:     rgba(167, 139, 250, 0.18);
+  --accent-gradient: linear-gradient(90deg, #a78bfa 0%, #60a5fa 100%);
+  --success:         #4ade80;
+  --warning:         #fbbf24;
+  --error:           #f87171;
+  --info:            #60a5fa;
+
+  /* Text on glass */
+  --text-primary:   rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary:  rgba(255, 255, 255, 0.30);
+  --text-disabled:  rgba(255, 255, 255, 0.18);
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --fs-chrome:  11px;
+  --fs-body:    13px;
+
+  /* Spacing */
+  --sp-0: 0;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  /* Background goes on the html element so it doesn't get blurred by panels above. */
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+/* Brand text helper */
+.brand-gradient {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+/* Form controls on glass */
+button {
+  font: inherit;
+  color: var(--text-primary);
+  background: var(--glass-1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+button:hover { background: var(--glass-2); border-color: var(--border-strong); }
+button:focus-visible { outline: 1px solid var(--border-focus); outline-offset: 1px; }
+
+input, select, textarea {
+  font: inherit;
+  color: var(--text-primary);
+  background: var(--glass-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: 0;
+  border-color: var(--border-focus);
+}
+input:disabled { color: var(--text-secondary); }
+
+.label {
+  font-size: var(--fs-chrome);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  font-weight: 700;
+}
+
+/* Utility class applied to glass panels by the Shell */
+.glass-panel {
+  background: var(--glass-1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
