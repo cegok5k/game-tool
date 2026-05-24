@@ -1,3 +1,5 @@
 export { createBridge } from './sdk'
 export type { Bridge, RegisteredNode, ConnectOptions } from './sdk'
+export { createBridgeClient } from './client'
+export type { BridgeClient, BridgeClientOptions } from './client'
 export { wrap, unwrap } from './protocol'
