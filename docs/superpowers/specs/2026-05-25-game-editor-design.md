@@ -247,14 +247,21 @@ Godot-style four-zone layout:
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### 8.2 Visual style
+### 8.2 Visual style — Glass / Aurora
 
-- Background: `#0a0a0f` / `#0e0e14` / `#0e0e16` (near-black graded)
-- Accent: `#7c6af7` (purple)
-- Secondary accents: `#4ade80` (success/connected), `#f87171` (error/stop), `#fbbf24` (AI/highlight), `#60a5fa` (info)
-- Text: `#e0e0e8` primary, `#888` secondary, `#555` tertiary, `#333` disabled
-- Borders: `#1a1a24` hairlines, `#1e1e2a` panels
-- Typography: Inter / system-ui, 13px base, 11px chrome, 600 weight for accents
+A deep gradient backdrop with translucent panels floating over it. The center canvas (game iframe) is opaque; surrounding panels are frosted glass that let the gradient bleed through, giving the editor depth without competing with the game.
+
+- **Body backdrop:** `linear-gradient(135deg, #0d0d1a 0%, #0a0a14 60%, #100c1f 100%)`
+- **Background blooms (decorative, fixed):** soft radial gradients — purple `rgba(124, 106, 247, 0.18)` upper-left, blue `rgba(96, 165, 250, 0.10)` lower-right
+- **Panels:** `background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(14px) saturate(140%); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 8px`
+- **Elevated surfaces** (cards, hovers): `rgba(255, 255, 255, 0.06)` with `border: 1px solid rgba(255, 255, 255, 0.10)`
+- **Inputs:** `background: rgba(0, 0, 0, 0.30); border: 1px solid rgba(255, 255, 255, 0.08)`
+- **Center canvas (opaque):** `background: #0a0a14` so the game renders crisply, no blur underneath
+- **Accent (primary):** `#a78bfa` (lighter purple — reads better on glass)
+- **Accent gradient** (brand, hover bands): `linear-gradient(90deg, #a78bfa, #60a5fa)`
+- **Status colours:** `#4ade80` connected, `#fbbf24` warning, `#f87171` error, `#60a5fa` info
+- **Text:** `rgba(255, 255, 255, 0.92)` primary, `rgba(255, 255, 255, 0.55)` secondary, `rgba(255, 255, 255, 0.30)` tertiary, `rgba(255, 255, 255, 0.18)` disabled
+- **Typography:** Inter / system-ui, 13px base, 11px chrome. Brand `game-tool` and section headings use the accent gradient via `background-clip: text`
 
 ### 8.3 Panels
 
@@ -391,7 +398,7 @@ These can be added later; none of them require architectural changes.
 |---|---|---|
 | Layout | Godot-style (scene tree · canvas · inspector · tabbed bottom) | Familiar to designers, fits the iframe-as-canvas model |
 | State architecture | Domain stores + event bus (Zustand) | Extensible; new panels plug into bus without touching existing stores |
-| Visual style | Linear/Raycast (near-black, purple accent) | Modern dev-tool aesthetic, maximum attention on game canvas |
+| Visual style | Glass / Aurora — deep gradient backdrop, frosted-glass panels, purple→blue accent gradient | Adds depth around the opaque game canvas; feels closer to a game than a developer tool |
 | Game loading | Dev server URL in iframe | Simplest; works for browser-only mode |
 | Bridge | Minimal importable SDK + capability declaration | Universal across game variants; nothing assumes Spine or jst |
 | Renderer | WebGL or WebGPU (game's choice) | Renderer is invisible to editor — gizmos drawn as SVG overlay |
