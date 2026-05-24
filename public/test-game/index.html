@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Game</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body { margin: 0; padding: 0; background: #0a0a0f; color: #e0e0e8; font-family: system-ui, sans-serif; height: 100vh; overflow: hidden; }
+      #stage { position: relative; width: 100vw; height: 100vh; background: linear-gradient(135deg, #11111c 0%, #1a1024 100%); }
+      .entity { position: absolute; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; user-select: none; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); transition: transform .12s ease-out; }
+      .entity[data-selected="true"] { outline: 2px solid #7c6af7; outline-offset: 2px; }
+      #status { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 4px; background: #181820; border: 1px solid #2a2a36; font-size: 11px; color: #888; }
+      #status[data-connected="true"] { color: #4ade80; border-color: #2a4a2a; }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="status" data-connected="false">○ Bridge disconnected</div>
+    <script src="/bridge/bridge.js"></script>
+    <script src="./game.js"></script>
+  </body>
+</html>
