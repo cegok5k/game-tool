@@ -1,0 +1,27 @@
+.shell {
+  display: grid;
+  grid-template-rows: 44px 1fr 220px;
+  grid-template-columns: 240px 1fr 280px;
+  grid-template-areas:
+    "menu menu menu"
+    "tree canvas inspector"
+    "bottom bottom bottom";
+  height: 100vh;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* Apply glass to side/edge panels — they let the body gradient bleed through */
+.menu, .tree, .inspector, .bottom {
+  background: var(--glass-1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.menu      { grid-area: menu; }
+.tree      { grid-area: tree;      overflow: auto; }
+.canvas    { grid-area: canvas;    background: var(--bg-canvas); position: relative; overflow: hidden; border-radius: var(--r-md); border: 1px solid var(--border); }
+.inspector { grid-area: inspector; overflow: auto; }
+.bottom    { grid-area: bottom;    display: flex; flex-direction: column; overflow: hidden; }
