@@ -13,8 +13,10 @@ export function CanvasPanel() {
   const markError = useBridgeStore((s) => s.markError)
   const setTree = useSceneStore((s) => s.setTree)
   const select = useEditorStore((s) => s.select)
+  const selectedId = useEditorStore((s) => s.selectedId)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const clientRef = useRef<BridgeClient | null>(null)
+  const skipNextSelectionPush = useRef(false)
 
   useEffect(() => {
     const frame = iframeRef.current
@@ -36,6 +38,7 @@ export function CanvasPanel() {
             setTree(msg.nodes)
             return
           case 'NODE_SELECTED':
+            skipNextSelectionPush.current = true
             select(msg.node?.id ?? null)
             return
           case 'BRIDGE_ERROR':
@@ -54,6 +57,18 @@ export function CanvasPanel() {
       clientRef.current = null
     }
   }, [gameUrl, markConnected, markError, setTree, select])
+
+  // Push tree-driven selection back to the game (skip echoes from NODE_SELECTED).
+  useEffect(() => {
+    const client = clientRef.current
+    if (client === null) return
+    if (skipNextSelectionPush.current) {
+      skipNextSelectionPush.current = false
+      return
+    }
+    if (selectedId === null) return
+    client.send({ type: 'SELECT_NODE', nodeId: selectedId })
+  }, [selectedId])
 
   return (
     <div className={styles.wrap}>
