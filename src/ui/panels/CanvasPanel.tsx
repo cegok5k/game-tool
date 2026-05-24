@@ -15,6 +15,7 @@ export function CanvasPanel() {
   const select = useEditorStore((s) => s.select)
   const selectedId = useEditorStore((s) => s.selectedId)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const overlayRef = useRef<HTMLDivElement | null>(null)
   const clientRef = useRef<BridgeClient | null>(null)
   const skipNextSelectionPush = useRef(false)
 
@@ -58,7 +59,6 @@ export function CanvasPanel() {
     }
   }, [gameUrl, markConnected, markError, setTree, select])
 
-  // Push tree-driven selection back to the game (skip echoes from NODE_SELECTED).
   useEffect(() => {
     const client = clientRef.current
     if (client === null) return
@@ -70,9 +70,27 @@ export function CanvasPanel() {
     client.send({ type: 'SELECT_NODE', nodeId: selectedId })
   }, [selectedId])
 
+  function handleOverlayClick(e: React.MouseEvent<HTMLDivElement>): void {
+    const client = clientRef.current
+    if (client === null) return
+    const overlay = overlayRef.current
+    if (overlay === null) return
+    const rect = overlay.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    client.send({ type: 'PICK_AT', x, y })
+  }
+
   return (
     <div className={styles.wrap}>
       <iframe ref={iframeRef} className={styles.iframe} src={gameUrl} title="Game" />
+      <div
+        ref={overlayRef}
+        className={styles.overlay}
+        data-tool="select"
+        onClick={handleOverlayClick}
+        aria-label="Canvas overlay"
+      />
       <div className={styles.badge} data-status={status}>
         {status === 'connected' ? '● Connected' :
          status === 'connecting' ? '○ Connecting' :

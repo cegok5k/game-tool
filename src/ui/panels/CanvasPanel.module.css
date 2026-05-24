@@ -35,3 +35,11 @@
   color: var(--error);
   border-color: rgba(248, 113, 113, 0.30);
 }
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+  cursor: crosshair;
+}
+.overlay[data-tool="select"] { cursor: default; }

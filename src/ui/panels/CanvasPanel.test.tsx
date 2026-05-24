@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, expect, test, beforeEach } from 'vitest'
 import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
@@ -25,5 +25,15 @@ describe('CanvasPanel', () => {
     render(<CanvasPanel />)
     useBridgeStore.getState().markConnected({ gameName: 'TestGame', capabilities: [] })
     expect(screen.getByText(/connected/i)).toBeInTheDocument()
+  })
+
+  test('overlay exists and accepts click without throwing', () => {
+    // Full PICK_AT plumbing is exercised by client.test.ts + sdk.test.ts + the e2e test.
+    // This is a thin smoke check that the overlay element renders and is clickable.
+    const { container } = render(<CanvasPanel />)
+    const overlay = container.querySelector('[data-tool="select"]') as HTMLElement | null
+    expect(overlay).toBeTruthy()
+    fireEvent.click(overlay!, { clientX: 50, clientY: 50 })
+    // No throw == pass.
   })
 })
