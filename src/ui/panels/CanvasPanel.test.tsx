@@ -2,6 +2,8 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, expect, test, beforeEach } from 'vitest'
 import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
+import type { NodeSnapshot } from '../../types/scene'
+import { useSceneStore } from '../../stores/sceneStore'
 import { CanvasPanel } from './CanvasPanel'
 
 describe('CanvasPanel', () => {
@@ -37,5 +39,33 @@ describe('CanvasPanel', () => {
     expect(overlay).toBeTruthy()
     fireEvent.click(overlay!, { clientX: 50, clientY: 50 })
     // No throw == pass.
+  })
+
+  test('TRANSFORM_CHANGED updates the sceneStore node via upsertNode', () => {
+    const node: NodeSnapshot = {
+      id: 'player',
+      kind: 'sprite',
+      name: 'Player',
+      parentId: null,
+      childIds: [],
+      transform: { x: 100, y: 100, rotation: 0, scaleX: 1, scaleY: 1 },
+      bounds: null,
+      schema: [],
+      values: {},
+    }
+    useSceneStore.getState().setTree([node])
+    render(<CanvasPanel />)
+    window.dispatchEvent(new MessageEvent('message', {
+      data: {
+        __gameTool: 'bridge',
+        v: 1,
+        payload: {
+          type: 'TRANSFORM_CHANGED',
+          nodeId: 'player',
+          transform: { x: 200, y: 100, rotation: 0, scaleX: 1, scaleY: 1 },
+        },
+      },
+    }))
+    expect(useSceneStore.getState().byId('player')?.transform.x).toBe(200)
   })
 })

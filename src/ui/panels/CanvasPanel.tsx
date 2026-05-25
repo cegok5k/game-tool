@@ -13,6 +13,7 @@ export function CanvasPanel() {
   const markConnected = useBridgeStore((s) => s.markConnected)
   const markError = useBridgeStore((s) => s.markError)
   const setTree = useSceneStore((s) => s.setTree)
+  const upsertNode = useSceneStore((s) => s.upsertNode)
   const select = useEditorStore((s) => s.select)
   const selectedId = useEditorStore((s) => s.selectedId)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
@@ -50,9 +51,13 @@ export function CanvasPanel() {
           case 'LOG':
             // Plan 6: stream into Console panel
             return
-          case 'TRANSFORM_CHANGED':
-            // Plan 2: call sceneStore.upsertNode to update the live tree
+          case 'TRANSFORM_CHANGED': {
+            const current = useSceneStore.getState().byId(msg.nodeId)
+            if (current !== undefined) {
+              upsertNode({ ...current, transform: msg.transform })
+            }
             return
+          }
         }
       },
     })
@@ -64,7 +69,7 @@ export function CanvasPanel() {
       setActiveBridgeClient(null)
       clientRef.current = null
     }
-  }, [gameUrl, markConnecting, markConnected, markError, setTree, select])
+  }, [gameUrl, markConnecting, markConnected, markError, setTree, upsertNode, select])
 
   useEffect(() => {
     const client = clientRef.current
