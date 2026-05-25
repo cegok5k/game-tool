@@ -158,15 +158,7 @@ export function createBridge(): Bridge {
       })
     },
     disconnect() {
-      if (listener !== null) {
-        window.removeEventListener('message', listener)
-        listener = null
-      }
-      connected = false
-      nodes.clear()
-      if (_activeBridge !== null) {
-        _activeBridge = null
-      }
+      _activeBridge?.deactivate()
     },
     register(node) {
       nodes.set(node.id, node)

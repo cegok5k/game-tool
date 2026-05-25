@@ -9,6 +9,7 @@ import { createBridgeClient, type BridgeClient } from '../../bridge'
 export function CanvasPanel() {
   const gameUrl = useProjectStore((s) => s.gameUrl)
   const status = useBridgeStore((s) => s.status)
+  const markConnecting = useBridgeStore((s) => s.markConnecting)
   const markConnected = useBridgeStore((s) => s.markConnected)
   const markError = useBridgeStore((s) => s.markError)
   const setTree = useSceneStore((s) => s.setTree)
@@ -20,6 +21,7 @@ export function CanvasPanel() {
   const skipNextSelectionPush = useRef(false)
 
   useEffect(() => {
+    markConnecting()
     const frame = iframeRef.current
     if (frame === null) return
 
@@ -46,7 +48,10 @@ export function CanvasPanel() {
             markError(msg.message)
             return
           case 'LOG':
+            // Plan 6: stream into Console panel
+            return
           case 'TRANSFORM_CHANGED':
+            // Plan 2: call sceneStore.upsertNode to update the live tree
             return
         }
       },
@@ -57,7 +62,7 @@ export function CanvasPanel() {
       client.dispose()
       clientRef.current = null
     }
-  }, [gameUrl, markConnected, markError, setTree, select])
+  }, [gameUrl, markConnecting, markConnected, markError, setTree, select])
 
   useEffect(() => {
     const client = clientRef.current

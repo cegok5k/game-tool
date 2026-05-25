@@ -93,6 +93,9 @@ bridge.connect({
 status.dataset.connected = 'true'
 status.textContent = '● Bridge connected'
 
+// Local click handler exists for completeness; selection is actually driven by
+// PICK_AT messages from the editor's overlay (see CanvasPanel.tsx). This handler
+// is a no-op stub kept for symmetry / future use.
 stage.addEventListener('click', (e) => {
   const x = e.clientX
   const y = e.clientY

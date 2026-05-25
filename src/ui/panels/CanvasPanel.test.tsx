@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, expect, test, beforeEach } from 'vitest'
 import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
@@ -16,14 +16,16 @@ describe('CanvasPanel', () => {
     expect(iframe.src).toContain('/test-game/index.html')
   })
 
-  test('renders a disconnected status badge by default', () => {
+  test('renders a connecting status badge by default', () => {
     render(<CanvasPanel />)
-    expect(screen.getByText(/disconnected/i)).toBeInTheDocument()
+    expect(screen.getByText(/connecting/i)).toBeInTheDocument()
   })
 
   test('updates badge to connected when bridgeStore connects', () => {
     render(<CanvasPanel />)
-    useBridgeStore.getState().markConnected({ gameName: 'TestGame', capabilities: [] })
+    act(() => {
+      useBridgeStore.getState().markConnected({ gameName: 'TestGame', capabilities: [] })
+    })
     expect(screen.getByText(/connected/i)).toBeInTheDocument()
   })
 
