@@ -31,11 +31,20 @@ describe('AIStudioPanel', () => {
     __setAiProviderForTests(null)
   })
 
-  test('shows "no API key" hint when env is empty', () => {
+  test('shows "no API key" hint when env is empty (mentions both candidate names)', () => {
     __setPlatformForTests(mockPlatform({}))
     render(<AIStudioPanel />)
+    expect(screen.getByText(/CEGO_GEMINI_API_KEY/i)).toBeInTheDocument()
     expect(screen.getByText(/GOOGLE_GENAI_API_KEY/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /generate/i })).toBeDisabled()
+  })
+
+  test('enables Generate when env has CEGO_GEMINI_API_KEY', () => {
+    __setPlatformForTests(mockPlatform({ CEGO_GEMINI_API_KEY: 'cego' }))
+    render(<AIStudioPanel />)
+    const ta = screen.getByRole('textbox')
+    fireEvent.change(ta, { target: { value: 'a cat' } })
+    expect(screen.getByRole('button', { name: /generate/i })).not.toBeDisabled()
   })
 
   test('enables Generate when env has the key + prompt is non-empty', () => {

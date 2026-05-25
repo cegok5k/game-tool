@@ -1,13 +1,18 @@
 import styles from './SettingsPanel.module.css'
 import { useProjectStore } from '../../stores/projectStore'
 import { getPlatform } from '../../platform'
+import { KEY_CANDIDATES as IMAGEN_KEY_CANDIDATES } from '../../ai/imagenProvider'
 
-type AiKey = { name: string; description: string }
+type AiKey = {
+  /** Candidate env var names; first found wins. Displayed joined by " or ". */
+  candidates: readonly string[]
+  description: string
+}
 
 const AI_KEYS: readonly AiKey[] = [
-  { name: 'GOOGLE_GENAI_API_KEY',     description: 'Imagen 2 image generation' },
-  { name: 'GOOGLE_VEO_API_KEY',       description: 'Veo 3 video generation' },
-  { name: 'GOOGLE_SEEDANCE_API_KEY',  description: 'Seedance animation' },
+  { candidates: IMAGEN_KEY_CANDIDATES, description: 'Imagen 3 image generation' },
+  { candidates: ['CEGO_VEO_API_KEY', 'GOOGLE_VEO_API_KEY'],           description: 'Veo 3 video generation (not yet wired)' },
+  { candidates: ['CEGO_SEEDANCE_API_KEY', 'GOOGLE_SEEDANCE_API_KEY'], description: 'Seedance animation (not yet wired)' },
 ]
 
 export function SettingsPanel() {
@@ -40,11 +45,12 @@ export function SettingsPanel() {
 
       <Section title="AI providers">
         {AI_KEYS.map((k) => {
-          const present = platform.env.has(k.name)
+          const matched = k.candidates.find((c) => platform.env.has(c))
+          const present = matched !== undefined
           return (
-            <div key={k.name} data-key-row="" data-present={present} className={styles['key-row']}>
+            <div key={k.candidates[0]} data-key-row="" data-present={present} className={styles['key-row']}>
               <span className={styles.dot} />
-              <span className={styles['key-name']}>{k.name}</span>
+              <span className={styles['key-name']}>{present ? matched : k.candidates.join(' or ')}</span>
               <span className={styles['key-desc']}>{present ? k.description : `${k.description} — env var not set`}</span>
             </div>
           )

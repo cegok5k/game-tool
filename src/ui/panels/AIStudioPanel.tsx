@@ -83,8 +83,9 @@ export function AIStudioPanel() {
         <span className={styles.label}>Prompt</span>
         {!available && (
           <div className={styles.unavailable}>
-            <strong>GOOGLE_GENAI_API_KEY</strong> environment variable is not set.
-            Set it before launching the editor to enable Imagen 3 image generation.
+            No Imagen API key found. Set either <strong>CEGO_GEMINI_API_KEY</strong> (Cego internal)
+            or <strong>GOOGLE_GENAI_API_KEY</strong> (public Gemini API) as a <code>VITE_</code>-prefixed
+            env var in <code>.env.local</code>, then restart the dev server.
           </div>
         )}
         <textarea

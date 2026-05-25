@@ -46,18 +46,25 @@ describe('SettingsPanel', () => {
     expect(screen.getByText(/browser/i)).toBeInTheDocument()
   })
 
-  test('shows AI keys as missing when env is empty', () => {
+  test('shows AI keys as missing when env is empty (joined candidate names)', () => {
     __setPlatformForTests(mockPlatform({}))
     render(<SettingsPanel />)
-    const genaiRow = screen.getByText('GOOGLE_GENAI_API_KEY').closest('[data-key-row]')
-    expect(genaiRow?.getAttribute('data-present')).toBe('false')
+    // When no candidate is set, the row label shows both names joined by " or ".
+    const imagenRow = screen.getByText(/CEGO_GEMINI_API_KEY or GOOGLE_GENAI_API_KEY/).closest('[data-key-row]')
+    expect(imagenRow?.getAttribute('data-present')).toBe('false')
   })
 
-  test('shows AI keys as present when env has them', () => {
-    __setPlatformForTests(mockPlatform({ GOOGLE_GENAI_API_KEY: 'abc', GOOGLE_VEO_API_KEY: 'def' }))
+  test('shows Imagen key as present (and resolved name) when GOOGLE_GENAI_API_KEY is set', () => {
+    __setPlatformForTests(mockPlatform({ GOOGLE_GENAI_API_KEY: 'abc' }))
     render(<SettingsPanel />)
-    expect(screen.getByText('GOOGLE_GENAI_API_KEY').closest('[data-key-row]')?.getAttribute('data-present')).toBe('true')
-    expect(screen.getByText('GOOGLE_VEO_API_KEY').closest('[data-key-row]')?.getAttribute('data-present')).toBe('true')
-    expect(screen.getByText('GOOGLE_SEEDANCE_API_KEY').closest('[data-key-row]')?.getAttribute('data-present')).toBe('false')
+    const row = screen.getByText('GOOGLE_GENAI_API_KEY').closest('[data-key-row]')
+    expect(row?.getAttribute('data-present')).toBe('true')
+  })
+
+  test('shows Imagen key as present using CEGO_GEMINI_API_KEY when that one is set', () => {
+    __setPlatformForTests(mockPlatform({ CEGO_GEMINI_API_KEY: 'cego' }))
+    render(<SettingsPanel />)
+    const row = screen.getByText('CEGO_GEMINI_API_KEY').closest('[data-key-row]')
+    expect(row?.getAttribute('data-present')).toBe('true')
   })
 })

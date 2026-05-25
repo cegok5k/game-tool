@@ -1,7 +1,13 @@
 import type { EnvAdapter } from '../types/platform'
 import { ProviderUnavailableError, type AiProvider, type ImageRequest, type ImageResult } from './provider'
 
-const KEY_NAME = 'GOOGLE_GENAI_API_KEY'
+/**
+ * Environment variable names checked in order. The first one with a non-empty
+ * value wins. CEGO_GEMINI_API_KEY is the studio's internal convention;
+ * GOOGLE_GENAI_API_KEY is the public Gemini API name.
+ */
+export const KEY_CANDIDATES = ['CEGO_GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY'] as const
+
 const MODEL = 'imagen-3.0-generate-002'
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:predict`
 
@@ -10,15 +16,23 @@ type Deps = { env: EnvAdapter }
 type Prediction = { bytesBase64Encoded: string; mimeType: string }
 type PredictResponse = { predictions?: Prediction[] }
 
+function resolveKey(env: EnvAdapter): string | undefined {
+  for (const name of KEY_CANDIDATES) {
+    const v = env.get(name)
+    if (v !== undefined && v !== '') return v
+  }
+  return undefined
+}
+
 export function createImagenProvider(deps: Deps): AiProvider {
   const env = deps.env
 
   return {
     name: 'Imagen 3',
-    isAvailable: () => env.has(KEY_NAME),
+    isAvailable: () => resolveKey(env) !== undefined,
     async generateImage(req: ImageRequest): Promise<ImageResult> {
-      const key = env.get(KEY_NAME)
-      if (key === undefined || key === '') {
+      const key = resolveKey(env)
+      if (key === undefined) {
         throw new ProviderUnavailableError('Imagen')
       }
       const body = {

@@ -9,7 +9,7 @@ describe('ImagenProvider', () => {
     globalThis.fetch = originalFetch
   })
 
-  test('isAvailable returns false when env has no GOOGLE_GENAI_API_KEY', () => {
+  test('isAvailable returns false when env has neither candidate key', () => {
     const provider = createImagenProvider({ env: { get: () => undefined, has: () => false } })
     expect(provider.isAvailable()).toBe(false)
   })
@@ -19,6 +19,28 @@ describe('ImagenProvider', () => {
       env: { get: (k) => (k === 'GOOGLE_GENAI_API_KEY' ? 'abc' : undefined), has: (k) => k === 'GOOGLE_GENAI_API_KEY' },
     })
     expect(provider.isAvailable()).toBe(true)
+  })
+
+  test('isAvailable returns true when env has CEGO_GEMINI_API_KEY', () => {
+    const provider = createImagenProvider({
+      env: { get: (k) => (k === 'CEGO_GEMINI_API_KEY' ? 'cego' : undefined), has: (k) => k === 'CEGO_GEMINI_API_KEY' },
+    })
+    expect(provider.isAvailable()).toBe(true)
+  })
+
+  test('CEGO_GEMINI_API_KEY takes precedence over GOOGLE_GENAI_API_KEY', async () => {
+    let capturedUrl: unknown
+    globalThis.fetch = (async (url: unknown) => {
+      capturedUrl = url
+      return new Response(JSON.stringify({ predictions: [{ bytesBase64Encoded: 'A', mimeType: 'image/png' }] }), { status: 200 })
+    }) as typeof fetch
+    const env = {
+      get: (k: string) => (k === 'CEGO_GEMINI_API_KEY' ? 'cego' : k === 'GOOGLE_GENAI_API_KEY' ? 'public' : undefined),
+      has: (k: string) => k === 'CEGO_GEMINI_API_KEY' || k === 'GOOGLE_GENAI_API_KEY',
+    }
+    const provider = createImagenProvider({ env })
+    await provider.generateImage({ prompt: 'x' })
+    expect(String(capturedUrl)).toContain('key=cego')
   })
 
   test('generateImage throws ProviderUnavailableError when no key', async () => {
