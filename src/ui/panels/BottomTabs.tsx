@@ -1,5 +1,6 @@
 import styles from './BottomTabs.module.css'
 import { useEditorStore, type BottomTab } from '../../stores/editorStore'
+import { ConsolePanel } from './ConsolePanel'
 
 const TABS: readonly { id: BottomTab; label: string }[] = [
   { id: 'assets',   label: 'Assets' },
@@ -12,6 +13,8 @@ const TABS: readonly { id: BottomTab; label: string }[] = [
 export function BottomTabs() {
   const active = useEditorStore((s) => s.activeBottomTab)
   const setActive = useEditorStore((s) => s.setActiveBottomTab)
+
+  const isConsole = active === 'console'
 
   return (
     <>
@@ -29,8 +32,8 @@ export function BottomTabs() {
           </button>
         ))}
       </div>
-      <div className={styles.content}>
-        {placeholderFor(active)}
+      <div className={`${styles.content} ${isConsole ? styles['content-pass'] : ''}`}>
+        {isConsole ? <ConsolePanel /> : <span>{placeholderFor(active)}</span>}
       </div>
     </>
   )
@@ -38,10 +41,10 @@ export function BottomTabs() {
 
 function placeholderFor(tab: BottomTab): string {
   switch (tab) {
-    case 'assets':   return 'Asset browser — coming in Plan 3.'
-    case 'config':   return 'Config editor — coming in Plan 4.'
-    case 'ai':       return 'AI Studio — coming in Plan 5.'
-    case 'console':  return 'Console — game logs will stream here.'
-    case 'settings': return 'Settings — coming in Plan 6.'
+    case 'assets':   return 'Asset browser — coming in a later plan.'
+    case 'config':   return 'Config editor — coming in a later plan.'
+    case 'ai':       return 'AI Studio — coming in a later plan.'
+    case 'console':  return ''
+    case 'settings': return 'Settings — coming in a later plan.'
   }
 }
