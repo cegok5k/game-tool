@@ -4,6 +4,7 @@ import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
 import type { NodeSnapshot } from '../../types/scene'
 import { useSceneStore } from '../../stores/sceneStore'
+import { useConsoleStore } from '../../stores/consoleStore'
 import { CanvasPanel } from './CanvasPanel'
 
 describe('CanvasPanel', () => {
@@ -67,5 +68,20 @@ describe('CanvasPanel', () => {
       },
     }))
     expect(useSceneStore.getState().byId('player')?.transform.x).toBe(200)
+  })
+
+  test('LOG messages from the bridge are appended to consoleStore', () => {
+    useConsoleStore.getState().clear()
+    render(<CanvasPanel />)
+    window.dispatchEvent(new MessageEvent('message', {
+      data: {
+        __gameTool: 'bridge',
+        v: 1,
+        payload: { type: 'LOG', level: 'info', message: 'hello from game' },
+      },
+    }))
+    const entries = useConsoleStore.getState().entries
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).toMatchObject({ level: 'info', message: 'hello from game' })
   })
 })
