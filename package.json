@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:bridge": "vite build --config vite.bridge.config.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -13,8 +14,11 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "mitt": "^3.0.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

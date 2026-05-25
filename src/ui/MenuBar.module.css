@@ -1,0 +1,27 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: 100%;
+  padding: 0 var(--sp-3);
+  font-size: var(--fs-chrome);
+}
+
+.brand {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.url-field {
+  width: 320px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}

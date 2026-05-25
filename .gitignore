@@ -20,3 +20,5 @@ pnpm-debug.log*
 
 coverage
 .superpowers/
+public/bridge/
+.playwright-mcp/

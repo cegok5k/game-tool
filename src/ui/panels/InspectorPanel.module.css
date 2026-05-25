@@ -1,0 +1,29 @@
+.wrap { padding: var(--sp-3); height: 100%; overflow: auto; }
+.empty { font-size: var(--fs-chrome); color: var(--text-tertiary); padding: var(--sp-2); }
+.title {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+}
+.section { margin-bottom: var(--sp-3); }
+.section-header {
+  font-size: var(--fs-chrome);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: var(--sp-2);
+}
+.field {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: var(--sp-2);
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.field-label { color: var(--text-secondary); }
+.field-input { width: 100%; }
