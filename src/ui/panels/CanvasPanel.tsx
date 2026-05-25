@@ -38,7 +38,12 @@ async function flushPendingPatches(): Promise<void> {
       const original = await platform.fs.readText(handle, file)
       const next = applyPatchBatch(original, bonePatches as ReadonlyMap<string, BonePatch>)
       await platform.fs.writeFile(handle, file, new TextEncoder().encode(next))
-      store.clearFile(file)
+      // Only clear if no new patches arrived during the read/write window — otherwise
+      // the store's inner map has been replaced and clearFile would discard the
+      // freshly-enqueued bones. The next debounced flush will pick those up.
+      if (useSpinePatchStore.getState().pending.get(file) === bonePatches) {
+        store.clearFile(file)
+      }
       consoleStore.addEntry({ level: 'info', message: `Saved ${file} (${bonePatches.size} bone${bonePatches.size === 1 ? '' : 's'})` })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
