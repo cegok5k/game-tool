@@ -48,7 +48,7 @@ describe('openProject', () => {
     expect(s.projectName).toBe('BigBait')
     expect(s.balanceTypes).toEqual(['rhodium', 'natrium'])
     expect(s.selectedBalanceType).toBe('rhodium')
-    expect(s.gameUrl).toBe('http://localhost:3100/?balanceType=rhodium')
+    expect(s.gameUrl).toBe('http://localhost/games/BigBait_8100/client/debug/testfullscreen.html?balance_type=rhodium')
   })
 
   test('leaves gameUrl unchanged when project has no balance types or port offset', async () => {

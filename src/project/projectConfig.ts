@@ -71,15 +71,18 @@ export async function readProjectConfig(fs: FsAdapter, folder: FolderHandle): Pr
 }
 
 export type DeriveGameUrlOptions = {
+  gameName: string | null
   devPortOffset: number | null
   balanceType: string | null
   host?: string
 }
 
 export function deriveGameUrl(opts: DeriveGameUrlOptions): string | null {
+  if (opts.gameName === null) return null
   if (opts.devPortOffset === null) return null
   if (opts.balanceType === null) return null
   const host = opts.host ?? 'localhost'
-  const port = 3000 + opts.devPortOffset
-  return `http://${host}:${port}/?balanceType=${encodeURIComponent(opts.balanceType)}`
+  // GLaDOS serves each game at /games/<gamename>_<8000+offset>/client/... on port 80.
+  const gladosId = `${opts.gameName}_${8000 + opts.devPortOffset}`
+  return `http://${host}/games/${gladosId}/client/debug/testfullscreen.html?balance_type=${encodeURIComponent(opts.balanceType)}`
 }

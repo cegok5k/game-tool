@@ -19,7 +19,7 @@ export function MenuBar() {
 
   function handleBalanceChange(name: string) {
     selectBalanceType(name)
-    const url = deriveGameUrl({ devPortOffset, balanceType: name })
+    const url = deriveGameUrl({ gameName: projectName, devPortOffset, balanceType: name })
     if (url !== null) setGameUrl(url)
   }
 

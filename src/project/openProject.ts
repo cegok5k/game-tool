@@ -10,6 +10,7 @@ export async function openProject(platform: PlatformAdapter): Promise<boolean> {
   store.setFolder(folder)
   store.loadProjectConfig(cfg)
   const url = deriveGameUrl({
+    gameName: cfg.projectName,
     devPortOffset: cfg.devPortOffset,
     balanceType: cfg.balanceTypes.length > 0 ? cfg.balanceTypes[0] : null,
   })

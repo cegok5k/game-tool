@@ -50,6 +50,6 @@ describe('MenuBar', () => {
     const select = screen.getByLabelText('Balance type') as HTMLSelectElement
     fireEvent.change(select, { target: { value: 'natrium' } })
     expect(useProjectStore.getState().selectedBalanceType).toBe('natrium')
-    expect(useProjectStore.getState().gameUrl).toBe('http://localhost:3100/?balanceType=natrium')
+    expect(useProjectStore.getState().gameUrl).toBe('http://localhost/games/X_8100/client/debug/testfullscreen.html?balance_type=natrium')
   })
 })

@@ -75,23 +75,27 @@ describe('readProjectConfig', () => {
 })
 
 describe('deriveGameUrl', () => {
+  test('returns null when gameName is null', () => {
+    expect(deriveGameUrl({ gameName: null, devPortOffset: 100, balanceType: 'rhodium' })).toBeNull()
+  })
+
   test('returns null when devPortOffset is null', () => {
-    expect(deriveGameUrl({ devPortOffset: null, balanceType: 'rhodium' })).toBeNull()
+    expect(deriveGameUrl({ gameName: 'BigBait', devPortOffset: null, balanceType: 'rhodium' })).toBeNull()
   })
 
   test('returns null when no balance type selected', () => {
-    expect(deriveGameUrl({ devPortOffset: 100, balanceType: null })).toBeNull()
+    expect(deriveGameUrl({ gameName: 'BigBait', devPortOffset: 100, balanceType: null })).toBeNull()
   })
 
-  test('assembles URL from port + balance type', () => {
-    expect(deriveGameUrl({ devPortOffset: 100, balanceType: 'rhodium' }))
-      .toBe('http://localhost:3100/?balanceType=rhodium')
-    expect(deriveGameUrl({ devPortOffset: 4, balanceType: 'argon' }))
-      .toBe('http://localhost:3004/?balanceType=argon')
+  test('builds the GLaDOS path-based URL from gameName + offset + balance', () => {
+    expect(deriveGameUrl({ gameName: 'BigBait', devPortOffset: 100, balanceType: 'rhodium' }))
+      .toBe('http://localhost/games/BigBait_8100/client/debug/testfullscreen.html?balance_type=rhodium')
+    expect(deriveGameUrl({ gameName: 'Argo', devPortOffset: 4, balanceType: 'argon' }))
+      .toBe('http://localhost/games/Argo_8004/client/debug/testfullscreen.html?balance_type=argon')
   })
 
   test('honors a custom host', () => {
-    expect(deriveGameUrl({ devPortOffset: 100, balanceType: 'rhodium', host: '127.0.0.1' }))
-      .toBe('http://127.0.0.1:3100/?balanceType=rhodium')
+    expect(deriveGameUrl({ gameName: 'BigBait', devPortOffset: 100, balanceType: 'rhodium', host: '127.0.0.1' }))
+      .toBe('http://127.0.0.1/games/BigBait_8100/client/debug/testfullscreen.html?balance_type=rhodium')
   })
 })
