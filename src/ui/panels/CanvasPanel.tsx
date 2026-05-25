@@ -4,7 +4,7 @@ import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
 import { useSceneStore } from '../../stores/sceneStore'
 import { useEditorStore } from '../../stores/editorStore'
-import { createBridgeClient, type BridgeClient } from '../../bridge'
+import { createBridgeClient, setActiveBridgeClient, type BridgeClient } from '../../bridge'
 
 export function CanvasPanel() {
   const gameUrl = useProjectStore((s) => s.gameUrl)
@@ -57,9 +57,11 @@ export function CanvasPanel() {
       },
     })
     clientRef.current = client
+    setActiveBridgeClient(client)
 
     return () => {
       client.dispose()
+      setActiveBridgeClient(null)
       clientRef.current = null
     }
   }, [gameUrl, markConnecting, markConnected, markError, setTree, select])
