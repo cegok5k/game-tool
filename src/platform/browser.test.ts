@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { createBrowserPlatform } from './browser'
+import { createBrowserPlatform, stripVitePrefix } from './browser'
 
 describe('browser platform adapter', () => {
   test('kind is "browser"', () => {
@@ -22,6 +22,15 @@ describe('browser platform adapter', () => {
   test('shell.spawn is undefined in browser', () => {
     const p = createBrowserPlatform()
     expect(p.shell.spawn).toBeUndefined()
+  })
+
+  test('stripVitePrefix strips VITE_ from keys and skips empty/non-string values', () => {
+    expect(stripVitePrefix({
+      VITE_GOOGLE_GENAI_API_KEY: 'from-vite',
+      VITE_EMPTY: '',
+      VITE_NUM: 42,
+      MODE: 'development',  // non-VITE_ prefix is ignored
+    })).toEqual({ GOOGLE_GENAI_API_KEY: 'from-vite' })
   })
 
   test('shell.openExternal opens in new tab', async () => {

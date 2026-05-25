@@ -122,6 +122,32 @@ function createEnvAdapter(env: Record<string, string>): EnvAdapter {
   }
 }
 
+/**
+ * Strip VITE_ prefix from any keys in `source` and drop non-string/empty values.
+ * Pure function, easily testable. Exported for test use only.
+ *
+ * SECURITY: any VITE_-prefixed value in `import.meta.env` is inlined into the
+ * production bundle and visible to anyone who downloads the built JS. Only use
+ * this for local-dev keys or keys you intentionally want to ship. For an
+ * Electron/Tauri build, the desktop platform adapter should read from
+ * `process.env` instead.
+ */
+export function stripVitePrefix(source: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(source)) {
+    if (!k.startsWith('VITE_')) continue
+    if (typeof v !== 'string' || v === '') continue
+    out[k.slice('VITE_'.length)] = v
+  }
+  return out
+}
+
+function readViteEnv(): Record<string, string> {
+  const meta = (import.meta as { env?: Record<string, unknown> }).env
+  if (meta === undefined) return {}
+  return stripVitePrefix(meta)
+}
+
 function createShellAdapter(): ShellAdapter {
   return {
     async openExternal(url) {
@@ -144,10 +170,15 @@ function createDialogAdapter(): DialogAdapter {
 }
 
 export function createBrowserPlatform(opts: Options = {}): PlatformAdapter {
+  // If the caller passes an `env`, use it as-is (handy for tests). Otherwise
+  // default to Vite's import.meta.env with VITE_ prefixes stripped so a
+  // `.env.local` file with `VITE_GOOGLE_GENAI_API_KEY=...` becomes
+  // `GOOGLE_GENAI_API_KEY` to the rest of the app.
+  const env = opts.env ?? readViteEnv()
   return {
     kind: 'browser',
     fs: createFsAdapter(),
-    env: createEnvAdapter(opts.env ?? {}),
+    env: createEnvAdapter(env),
     shell: createShellAdapter(),
     dialog: createDialogAdapter(),
   }

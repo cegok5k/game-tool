@@ -69,6 +69,19 @@ types  →  platform / bus / bridge protocol  →  bridge sdk + client  →  sto
 
 **The bridge SDK is published as both ES module (for the editor) and IIFE bundle (for `<script>` inclusion).** `vite.bridge.config.ts` builds the IIFE bundle to `public/bridge/bridge.js`. The bundle is gitignored — run `npm run build:bridge` before running the test game.
 
+## Environment variables (AI keys, etc.)
+
+The AI Studio (`src/ui/panels/AIStudioPanel.tsx`) checks `getPlatform().env.has('GOOGLE_GENAI_API_KEY')` to decide if Imagen generation is available. The Settings tab shows green/red indicators for each AI provider key.
+
+**To wire a key for local dev:**
+1. Copy `.env.local.example` to `.env.local` (already gitignored as `*.local`).
+2. Add `VITE_GOOGLE_GENAI_API_KEY=your-key-here`.
+3. Restart `npm run dev`.
+
+The browser platform's `createBrowserPlatform()` reads `import.meta.env` and **strips the `VITE_` prefix** so the rest of the app uses canonical names. See `stripVitePrefix` in `src/platform/browser.ts`.
+
+**SECURITY:** `VITE_`-prefixed values are inlined into the production bundle and visible to anyone who downloads the JS. Only use this for local-dev keys or keys you intentionally want to ship. For an Electron/Tauri build, the desktop platform adapter should read from `process.env` instead.
+
 ## Conventions
 
 - Named exports for components (`export function App()` in `src/App.tsx`) rather than default exports — keeps refactors and grep'ing straightforward. Stick to this unless a library forces a default export.
