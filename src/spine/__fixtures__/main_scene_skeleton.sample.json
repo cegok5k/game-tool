@@ -1,0 +1,25 @@
+{
+"skeleton": { "hash": "4oVuJw6b/+0", "spine": "4.2.37", "x": -2474.74, "y": -2568.42, "width": 4553.38, "height": 5068.38 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "background", "parent": "root" },
+	{ "name": "spinner_container", "parent": "root", "y": -150 },
+	{ "name": "merchant_free_spins", "parent": "root", "y": -550 },
+	{ "name": "match_hightlighter", "parent": "spinner_container" },
+	{ "name": "line_hightlighter", "parent": "spinner_container" },
+	{ "name": "particles", "parent": "root", "y": -20 },
+	{ "name": "spinner", "parent": "spinner_container" },
+	{ "name": "highlight_info", "parent": "spinner_container", "y": -460.33 },
+	{ "name": "upscore_credits", "parent": "spinner_container", "y": 1.83 },
+	{ "name": "big_bait_steps", "parent": "root", "y": 351.97, "scaleY": 0.9997 },
+	{ "name": "scatter_glow", "parent": "root", "x": -540, "y": 570 },
+	{ "name": "free_spin_area", "parent": "root", "x": 540, "y": 580 },
+	{ "name": "scatter_prize_label", "parent": "scatter_glow", "x": 2, "y": -138, "shearY": -8 },
+	{ "name": "top_display", "parent": "spinner_container", "y": 437 },
+	{ "name": "suspense", "parent": "spinner" },
+	{ "name": "suspense_reel_3", "parent": "suspense", "x": 260 },
+	{ "name": "suspense_reel_4", "parent": "suspense", "x": 520 },
+	{ "name": "glow", "parent": "spinner_container", "scaleX": 2, "scaleY": 2 },
+	{ "name": "symbol_suspense", "parent": "spinner" }
+]
+}
