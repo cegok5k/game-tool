@@ -5,6 +5,8 @@ import { useBridgeStore } from '../../stores/bridgeStore'
 import { useSceneStore } from '../../stores/sceneStore'
 import { useEditorStore } from '../../stores/editorStore'
 import { createBridgeClient, setActiveBridgeClient, type BridgeClient } from '../../bridge'
+import { CanvasToolbar } from '../canvas/CanvasToolbar'
+import { Gizmo } from '../canvas/gizmo/Gizmo'
 
 export function CanvasPanel() {
   const gameUrl = useProjectStore((s) => s.gameUrl)
@@ -103,6 +105,8 @@ export function CanvasPanel() {
         onClick={handleOverlayClick}
         aria-label="Canvas overlay"
       />
+      <Gizmo />
+      <CanvasToolbar />
       <div className={styles.badge} data-status={status}>
         {status === 'connected' ? '● Connected' :
          status === 'connecting' ? '○ Connecting' :

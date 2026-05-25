@@ -1,0 +1,36 @@
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 2;
+}
+.box {
+  fill: rgba(167, 139, 250, 0.05);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  shape-rendering: crispEdges;
+  pointer-events: auto;
+  cursor: move;
+}
+.handle {
+  fill: var(--bg-canvas);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  pointer-events: auto;
+}
+.handle-corner { cursor: nwse-resize; }
+.handle-edge   { cursor: ns-resize; }
+.handle-edge.h-horiz { cursor: ew-resize; }
+.handle-corner.h-flip { cursor: nesw-resize; }
+.rotate-line { stroke: var(--accent); stroke-width: 1; }
+.rotate-handle {
+  fill: var(--accent);
+  stroke: rgba(255,255,255,0.4);
+  stroke-width: 1;
+  pointer-events: auto;
+  cursor: grab;
+}
+.rotate-handle:active { cursor: grabbing; }
