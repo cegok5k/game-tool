@@ -39,6 +39,13 @@ export type NodeKind =
   | 'node'
   | 'group'
 
+export type SpineBoneOwner = {
+  /** Project-relative path to the Spine skeleton JSON file (e.g. "media/skeletons_json/main_scene/main_scene/Skeleton.json"). */
+  skeletonFile: string
+  /** Bone name within the skeleton's bones[] array. */
+  boneName: string
+}
+
 export type NodeSnapshot = {
   id: string
   kind: NodeKind
@@ -49,4 +56,5 @@ export type NodeSnapshot = {
   bounds: Bounds | null
   schema: readonly FieldSchema[]
   values: Readonly<Record<string, unknown>>
+  owner?: SpineBoneOwner
 }

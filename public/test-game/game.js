@@ -10,6 +10,7 @@ const state = {
   player:    { id: 'player',    name: 'Player',    x: 200, y: 200, w: 80, h: 80, color: '#7c6af7', health: 100, speed: 180 },
   enemy:     { id: 'enemy',     name: 'Enemy',     x: 480, y: 240, w: 70, h: 70, color: '#f87171', health: 60,  damage: 12 },
   pickup:    { id: 'pickup',    name: 'Pickup',    x: 360, y: 380, w: 40, h: 40, color: '#fbbf24', value: 50 },
+  demobone:  { id: 'demobone',  name: 'demo bone', x: 540, y: 320, w: 60, h: 60, color: '#34d399', isBone: true },
 }
 
 const nodes = {}
@@ -40,7 +41,7 @@ for (const key of Object.keys(state)) {
 function register(s) {
   bridge.register({
     id: s.id,
-    kind: 'sprite',
+    kind: s.isBone ? 'spine-bone' : 'sprite',
     name: s.name,
     transform: { x: s.x, y: s.y, rotation: 0, scaleX: 1, scaleY: 1 },
     bounds: { x: s.x, y: s.y, width: s.w, height: s.h },
@@ -50,6 +51,10 @@ function register(s) {
       Object.assign(s, props)
       applyTransform(nodes[s.id], s)
     },
+    ...(s.isBone ? { owner: {
+      skeletonFile: 'media/skeletons_json/main_scene/main_scene/Skeleton.json',
+      boneName: 'spinner_container',
+    } } : {}),
   })
 }
 
