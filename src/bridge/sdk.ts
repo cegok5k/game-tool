@@ -1,6 +1,6 @@
 import type { Capability, GameMetadata } from '../types/capabilities'
 import type { GameMessage } from '../types/bridge'
-import type { Bounds, FieldSchema, NodeKind, NodeSnapshot, Transform } from '../types/scene'
+import type { Bounds, FieldSchema, NodeKind, NodeSnapshot, SpineBoneOwner, Transform } from '../types/scene'
 import { unwrap, wrap } from './protocol'
 
 // Module-level active bridge — only one bridge may be connected at a time.
@@ -19,6 +19,7 @@ export type RegisteredNode = {
   schema: readonly FieldSchema[]
   get: () => Record<string, unknown>
   set: (props: Record<string, unknown>) => void
+  owner?: SpineBoneOwner
 }
 
 export type ConnectOptions = {
@@ -57,6 +58,7 @@ export function createBridge(): Bridge {
       bounds: node.bounds,
       schema: node.schema,
       values: node.get(),
+      owner: node.owner,
     }
   }
 

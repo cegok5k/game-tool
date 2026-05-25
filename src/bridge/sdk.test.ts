@@ -71,6 +71,60 @@ describe('bridge SDK', () => {
     expect(treeMsg!.nodes[0].values).toEqual({ health: 100 })
   })
 
+  test('register forwards owner for spine-bone snapshots', () => {
+    const bridge = createBridge()
+    bridge.connect({ gameName: 'TestGame', capabilities: ['canvas2d'] })
+    captured.length = 0
+
+    bridge.register({
+      id: 'bone-1',
+      kind: 'spine-bone',
+      name: 'spinner_container',
+      transform: { x: 0, y: -150, rotation: 0, scaleX: 1, scaleY: 1 },
+      bounds: null,
+      schema: [],
+      get: () => ({}),
+      set: () => {},
+      owner: {
+        skeletonFile: 'media/skeletons_json/main_scene/main_scene/Skeleton.json',
+        boneName: 'spinner_container',
+      },
+    })
+
+    deliver(window, { type: 'REQUEST_TREE' })
+
+    const treeMsg = lastSentOfType(captured, 'NODE_TREE')
+    expect(treeMsg).toBeDefined()
+    const node = treeMsg!.nodes[0]
+    expect(node.kind).toBe('spine-bone')
+    expect(node.owner).toEqual({
+      skeletonFile: 'media/skeletons_json/main_scene/main_scene/Skeleton.json',
+      boneName: 'spinner_container',
+    })
+  })
+
+  test('register omits owner for nodes without one', () => {
+    const bridge = createBridge()
+    bridge.connect({ gameName: 'TestGame', capabilities: ['canvas2d'] })
+    captured.length = 0
+
+    bridge.register({
+      id: 'box-1',
+      kind: 'sprite',
+      name: 'Player',
+      transform: { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 },
+      bounds: null,
+      schema: [],
+      get: () => ({}),
+      set: () => {},
+    })
+
+    deliver(window, { type: 'REQUEST_TREE' })
+
+    const node = lastSentOfType(captured, 'NODE_TREE')!.nodes[0]
+    expect(node.owner).toBeUndefined()
+  })
+
   test('SELECT_NODE causes NODE_SELECTED to be sent with the snapshot', () => {
     const bridge = createBridge()
     bridge.connect({ gameName: 'TestGame', capabilities: ['canvas2d'] })
