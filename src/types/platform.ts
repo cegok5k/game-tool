@@ -4,11 +4,22 @@ export type FolderHandle = {
   fsHandle: FileSystemDirectoryHandle | null
 }
 
-export type FileInfo = {
+export type DirEntryKind = 'file' | 'directory'
+
+export type DirEntry = {
+  kind: DirEntryKind
+  /** Path relative to the FolderHandle root */
   path: string
+  /** Base name (no parent path) */
+  name: string
+  /** File size in bytes (only meaningful for files) */
   size: number
+  /** Last modified time (epoch ms); 0 if unknown */
   modifiedAt: number
 }
+
+/** @deprecated alias for DirEntry */
+export type FileInfo = DirEntry
 
 export type ChangeEvent =
   | { type: 'added'; path: string }
@@ -30,7 +41,7 @@ export interface FsAdapter {
   readFile(handle: FolderHandle, relativePath: string): Promise<Uint8Array>
   readText(handle: FolderHandle, relativePath: string): Promise<string>
   writeFile(handle: FolderHandle, relativePath: string, data: Uint8Array): Promise<void>
-  listDir(handle: FolderHandle, relativePath: string): Promise<FileInfo[]>
+  listDir(handle: FolderHandle, relativePath: string): Promise<DirEntry[]>
   watch(handle: FolderHandle, relativePath: string, onChange: (e: ChangeEvent) => void): () => void
 }
 

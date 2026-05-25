@@ -1,7 +1,7 @@
 import type {
   DialogAdapter,
+  DirEntry,
   EnvAdapter,
-  FileInfo,
   FolderHandle,
   FsAdapter,
   PlatformAdapter,
@@ -53,19 +53,22 @@ function createFsAdapter(): FsAdapter {
 
     async listDir(handle, relativePath) {
       const dirHandle = await resolveDirHandle(handle, relativePath)
-      const result: FileInfo[] = []
+      const result: DirEntry[] = []
       for await (const [name, entry] of (dirHandle as FileSystemDirectoryHandle & {
         entries: () => AsyncIterableIterator<[string, FileSystemHandle]>
       }).entries()) {
+        const path = `${relativePath ? relativePath + '/' : ''}${name}`
         if (entry.kind === 'file') {
           const file = await (entry as FileSystemFileHandle).getFile()
-          result.push({
-            path: `${relativePath ? relativePath + '/' : ''}${name}`,
-            size: file.size,
-            modifiedAt: file.lastModified,
-          })
+          result.push({ kind: 'file', path, name, size: file.size, modifiedAt: file.lastModified })
+        } else if (entry.kind === 'directory') {
+          result.push({ kind: 'directory', path, name, size: 0, modifiedAt: 0 })
         }
       }
+      result.sort((a, b) => {
+        if (a.kind !== b.kind) return a.kind === 'directory' ? -1 : 1
+        return a.name.localeCompare(b.name)
+      })
       return result
     },
 
