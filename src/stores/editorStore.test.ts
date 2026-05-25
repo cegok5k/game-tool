@@ -26,4 +26,16 @@ describe('editorStore', () => {
     useEditorStore.getState().setActiveBottomTab('assets')
     expect(useEditorStore.getState().activeBottomTab).toBe('assets')
   })
+
+  test('initial snap state', () => {
+    expect(useEditorStore.getState().snapEnabled).toBe(false)
+    expect(useEditorStore.getState().gridSize).toBe(32)
+  })
+
+  test('setSnapEnabled toggles', () => {
+    useEditorStore.getState().setSnapEnabled(true)
+    expect(useEditorStore.getState().snapEnabled).toBe(true)
+    useEditorStore.getState().setSnapEnabled(false)
+    expect(useEditorStore.getState().snapEnabled).toBe(false)
+  })
 })
