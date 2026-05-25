@@ -1,0 +1,70 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-chrome);
+  color: var(--text-tertiary);
+}
+.spacer { flex: 1; }
+.filter {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-2);
+  font-size: var(--fs-chrome);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+.filter[aria-pressed="true"] {
+  background: var(--glass-3);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+.filter.info[aria-pressed="true"]  { color: var(--info); border-color: rgba(96, 165, 250, 0.30); }
+.filter.warn[aria-pressed="true"]  { color: var(--warning); border-color: rgba(251, 191, 36, 0.30); }
+.filter.error[aria-pressed="true"] { color: var(--error); border-color: rgba(248, 113, 113, 0.30); }
+.clear {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-3);
+  font-size: var(--fs-chrome);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.clear:hover { background: var(--glass-2); }
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-1) 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.empty {
+  padding: var(--sp-3);
+  color: var(--text-tertiary);
+  font-size: var(--fs-chrome);
+}
+.entry {
+  display: grid;
+  grid-template-columns: 70px 50px 1fr;
+  gap: var(--sp-2);
+  padding: 2px var(--sp-3);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+}
+.entry[data-level="info"]  .level { color: var(--info); }
+.entry[data-level="warn"]  .level { color: var(--warning); }
+.entry[data-level="error"] .level { color: var(--error); }
+.entry[data-level="error"] .message { color: var(--text-primary); }
+.timestamp { color: var(--text-tertiary); }
+.level { font-weight: 700; text-transform: uppercase; font-size: 10px; }
+.message { white-space: pre-wrap; word-break: break-word; }
