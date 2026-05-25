@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, test, beforeEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
+import { describe, expect, test, beforeEach, vi } from 'vitest'
 import type { NodeSnapshot } from '../../types/scene'
 import { useSceneStore } from '../../stores/sceneStore'
 import { useEditorStore } from '../../stores/editorStore'
+import { setActiveBridgeClient } from '../../bridge'
 import { InspectorPanel } from './InspectorPanel'
 
 const playerNode: NodeSnapshot = {
@@ -51,10 +52,43 @@ describe('InspectorPanel', () => {
     expect(screen.getByDisplayValue('180')).toBeInTheDocument()
   })
 
-  test('fields are disabled in Plan 1 (read-only)', () => {
+  test('editing the Position X field dispatches UPDATE_TRANSFORM via bridge', async () => {
+    vi.useFakeTimers()
+    const send = vi.fn()
+    setActiveBridgeClient({ send, dispose: () => {} })
     useSceneStore.getState().setTree([playerNode])
     useEditorStore.getState().select('player')
     render(<InspectorPanel />)
-    expect(screen.getByDisplayValue('100')).toBeDisabled()
+    const xInput = screen.getByLabelText('Position X') as HTMLInputElement
+    expect(xInput.value).toBe('120')
+    fireEvent.change(xInput, { target: { value: '300' } })
+    await act(async () => { vi.advanceTimersByTime(250) })
+    expect(send).toHaveBeenCalledTimes(1)
+    const sent = send.mock.calls[0][0]
+    expect(sent.type).toBe('UPDATE_TRANSFORM')
+    expect(sent.nodeId).toBe('player')
+    expect(sent.transform).toEqual({ x: 300 })
+    setActiveBridgeClient(null)
+    vi.useRealTimers()
+  })
+
+  test('editing a number property dispatches UPDATE_PROPERTY via bridge', async () => {
+    vi.useFakeTimers()
+    const send = vi.fn()
+    setActiveBridgeClient({ send, dispose: () => {} })
+    useSceneStore.getState().setTree([playerNode])
+    useEditorStore.getState().select('player')
+    render(<InspectorPanel />)
+    const healthInput = screen.getByLabelText('Health') as HTMLInputElement
+    fireEvent.change(healthInput, { target: { value: '50' } })
+    await act(async () => { vi.advanceTimersByTime(250) })
+    expect(send).toHaveBeenCalledTimes(1)
+    const sent = send.mock.calls[0][0]
+    expect(sent.type).toBe('UPDATE_PROPERTY')
+    expect(sent.nodeId).toBe('player')
+    expect(sent.key).toBe('health')
+    expect(sent.value).toBe(50)
+    setActiveBridgeClient(null)
+    vi.useRealTimers()
   })
 })

@@ -109,7 +109,12 @@ export function createBridge(): Bridge {
       }
       case 'UPDATE_TRANSFORM': {
         const node = nodes.get(msg.nodeId)
-        if (node) node.transform = { ...node.transform, ...msg.transform }
+        if (node) {
+          node.transform = { ...node.transform, ...msg.transform }
+          // Notify the game so it can apply the transform visually.
+          // The transform fields (x, y, rotation, scaleX, scaleY) flow into set() as a prop bag.
+          node.set(msg.transform as Record<string, unknown>)
+        }
         return
       }
       case 'EDITOR_CONNECT':
