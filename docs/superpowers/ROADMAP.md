@@ -1,36 +1,44 @@
 # game-tool — Roadmap
 
-This file is the live to-do list for the editor after Plans 1–9 shipped. Each plan listed here will get its own detailed implementation plan in `docs/superpowers/plans/` when picked up.
+This file is the live to-do list for the editor. Each plan listed here will get its own detailed implementation plan in `docs/superpowers/plans/` when picked up.
 
-**Status as of 2026-05-25:** 9 plans merged. 176/176 tests pass. The editor is a fully working live-editing demo for the test game, with Asset Browser, Config Editor (with disk write-back), Console, Settings, and AI Studio (Imagen 3) all functional. **What's missing** is the big "Gizmo edit → Spine JSON on disk" loop that the original spec was built around.
+**Status as of 2026-05-25:** **Plans 1–10 merged.** 200/200 tests pass. The editor is a fully working live-editing demo for the test game (Asset Browser, Config Editor with disk write-back, Console, Settings, AI Studio with Imagen 3, AND now Spine JSON bone-level write-back). **What's still missing for real-game usage**: the bridge SDK is only baked into the test game — big-bait and other real studio games have no `bridge.connect()` call, so the live-editing loop doesn't reach them.
 
 ---
 
-## Plan 10 — Spine JSON write-back  ⭐ next big item
+## Plan 10 — Spine JSON write-back  ✅ MERGED 2026-05-25
 
-**Why:** Closes the "uber editor" loop. Right now Inspector edits and gizmo drags update the **running game** via postMessage, but those changes don't persist — reload the iframe and they're gone. Plan 10 wires the disk write-back so changes survive reloads and feed the existing gulp pipeline.
+Shipped: types, `patchBone`, `resolveSkeletonFile`, `NodeSnapshot.owner`, `spinePatchStore`, `applyPatchBatch`, `CanvasPanel` wiring with race-safe debounced flush. End-to-end UAT confirmed via Playwright. Bone-level patches flow from gizmo → `media/skeletons_json/<...>/Skeleton.json` on disk. See `docs/superpowers/plans/2026-05-25-plan-10-spine-json-writeback.md` + `…-smoke-test-results.md`.
+
+A small follow-up commit (`f421287`) also corrected `deriveGameUrl` to produce the GLaDOS-style path (`/games/<gamename>_<8000+offset>/client/debug/testfullscreen.html?balance_type=...`) instead of the wrong `localhost:3100/?balanceType=...` past-me had assumed.
+
+---
+
+## Plan 11 — Bridge integration with the real game (jst-spine)  ⭐ next big item
+
+**Why:** Plan 10 shipped the disk-write machinery and Plan 11 makes it actually reachable from big-bait (and the rest of the studio's games). Right now the bridge SDK is only loaded by the bundled test game (`public/test-game/game.js`). The real games (e.g. big-bait running on GLaDOS at `http://localhost/games/BigBait_8100/client/debug/testfullscreen.html`) use `jst` / `jst-spine` / `knoxjs` and have no bridge — so the editor's iframe loads the game but nothing connects.
+
+**What it needs to do:**
+1. **Inject the bridge SDK** into the studio's debug HTML. Either:
+   - Modify big-bait's `client/debug/testfullscreen.html` to optionally `<script src="...bridge.js">` (gulp would need to know about the file).
+   - OR have GLaDOS inject it for any game running under it (clean but cross-project).
+   - OR build a userscript / browser extension (simplest but least integrated).
+2. **Walk the jst scene graph** at game-start time and call `bridge.register({...})` for each node. The studio's `BlazingDragonNodeFactory` (`big-bait/client/src/gui/nodefactory/blazingdragonnodefactory.js`) builds the node tree from `media/client-config/*.json`. The bridge integration would hook in there or after to enumerate.
+3. **Map jst-spine bones to bridge nodes** so the gizmo can grab a single bone and Plan 10's write-back fires against the right `Skeleton.json`. Each spine node knows its `skeleton_id` (e.g. `"main_scene.main_scene.Skeleton"` — `resolveSkeletonFile` from Plan 10 maps this to the file path).
+4. **Bounds reporting** — the bridge needs to surface world-space bounding boxes so the gizmo can position itself on the canvas overlay. jst's render pass has matrix info; need a `NodeDebugInterface.getBounds(nodeId)`.
+5. **Update propagation** — when the editor sends `UPDATE_TRANSFORM`, jst-spine needs to apply it to the bone's runtime data (so the user sees the move live in the iframe before the disk write).
 
 **What it needs from the user:**
-1. Access to a real Spine JSON file from one of the studio's games. The candidate locations on a developer machine:
-   - `<game-repo>/client/compiled/game/media/skeletons/<name>.json` (compiled)
-   - `<game-repo>/client/media/skeletons/<name>.json` (source, may not exist — Spine source files are `.spine` binary, not JSON)
-2. Confirmation on the patch granularity decision the spec called out (skeleton level / slot level / bone level). Recommend bone level since the gizmo edits a single entity at a time.
-3. One round-trip verification on a test asset: edit it with the editor, confirm gulp builds successfully with the new JSON, confirm the game renders the edit.
+1. Write access to either big-bait's `client/debug/testfullscreen.html` (for inline `<script>` injection) or to GLaDOS's serving layer (for a cross-cutting injection).
+2. Cooperation from the jst-spine maintainer — adding a `NodeDebugInterface` is a real change to a shared studio library. Or scope this to a fork / debug-only build.
 
-**Scope (estimated 5–7 tasks):**
-1. `src/spine/spineJsonTypes.ts` — types for `SpineJson`, `Bone`, `Slot`, `Attachment` based on actual sample.
-2. `src/spine/patchBone.ts` — pure function `patchBone(json, boneName, partial): SpineJson` with TDD against a real sample as fixture.
-3. `src/spine/findOwner.ts` — given a node ID from the bridge, figure out which `.json` file owns it (likely a map maintained by the bridge or a convention like `nodeId.startsWith('main_scene.')` → `main_scene.json`).
-4. `src/stores/spinePatchStore.ts` — track pending patches per file (so multiple edits batch into one write).
-5. Wire `CanvasPanel` to call `applyAndWrite(patch)` after `UPDATE_TRANSFORM` commits.
-6. Add a "Saved" toast / Console log entry when a write completes.
-7. Browser smoke test against a real game.
+**Scope (estimated 6–10 tasks):** TBD. First step is a brainstorming session to pick the injection strategy.
 
-**Open architectural question:** Does the bridge SDK report enough info for the editor to know *which Spine JSON file* an entity comes from? Likely needs a `spineFile` field added to `NodeSnapshot`. Game-side change: the `jst-spine` integration would need to surface this.
+**Open question:** does jst-spine expose anything like a `NodeDebugInterface` already, or does this require new code in the studio's libraries? Check `client/node_modules/jst-spine/debug/` first — there's already a `gamecontrol.js` and `mousekeyboardcontrol.js` in there, suggesting some debug surface exists.
 
 ---
 
-## Plan 11 — Veo 3 video generation
+## Plan 12 — Veo 3 video generation
 
 **Why:** Second AI provider. Designers can generate animated cutscenes / promotional footage / background videos.
 
@@ -46,11 +54,11 @@ This file is the live to-do list for the editor after Plans 1–9 shipped. Each 
 
 ---
 
-## Plan 12 — Seedance animation
+## Plan 13 — Seedance animation
 
 **Why:** Third AI provider. Generates animated content — looks suited to short loops / character animations.
 
-**Same shape as Plan 11.** Endpoint and parameter set differs.
+**Same shape as Plan 12.** Endpoint and parameter set differs.
 
 **Key candidates:** `CEGO_SEEDANCE_API_KEY`, `GOOGLE_SEEDANCE_API_KEY`.
 
@@ -120,10 +128,10 @@ This file is the live to-do list for the editor after Plans 1–9 shipped. Each 
 
 When you (or a future Claude session) ask "what should I work on?", consult this file. Roughly in priority order:
 
-1. **Plan 10 first** — it's the centerpiece of the original spec.
+1. **Plan 11 next** — bridge integration with the real game. Plan 10's machinery is unreachable from big-bait without it.
 2. **Stale-tree fix** — small, blocks nothing but is annoying every time URL changes.
 3. **Drop-AI-into-Inspector-slot** — best demo of the existing AI feature, ~3-4 tasks.
-4. **Plan 11 (Veo) + Plan 12 (Seedance)** — round out the AI suite.
+4. **Plan 12 (Veo) + Plan 13 (Seedance)** — round out the AI suite.
 5. **Polish items in any order.**
 6. **Desktop wrapper** — last, since it's significant scope and the browser mode is already production-quality.
 
@@ -147,8 +155,9 @@ Established convention is one plan per branch (`plan-N-<name>`), `--no-ff` merge
 Don't re-derive things — there are existing artifacts:
 
 - **Spec:** `docs/superpowers/specs/2026-05-25-game-editor-design.md` — definitive design.
-- **Plan files:** `docs/superpowers/plans/2026-05-25-plan-1-*.md` through `plan-9-*.md` — detailed implementation breakdowns. Use these as templates.
-- **Smoke test results:** `docs/superpowers/plans/2026-05-25-plan-N-smoke-test-results.md` for each of plans 1–4, 6.
+- **Plan files:** `docs/superpowers/plans/2026-05-25-plan-1-*.md` through `plan-10-*.md` — detailed implementation breakdowns. Use these as templates.
+- **Smoke test results:** `docs/superpowers/plans/2026-05-25-plan-N-smoke-test-results.md` for plans 1–4, 6, and 10.
 - **Screenshots:** the Plan N smoke test PNG files show what the editor looked like at each milestone.
 - **OVERNIGHT-PROGRESS.md** at `docs/superpowers/OVERNIGHT-PROGRESS.md` — interim status snapshot from the first overnight execution.
 - **CLAUDE.md** — quick architecture overview for any future Claude instance.
+- **Memory:** `C:\Users\kimok\.claude\projects\D--work-game-tool\memory\MEMORY.md` — durable notes about file format conventions in big-bait, environment quirks, user preferences (no-pause, no-PowerShell, merge-to-main, push scoping).
