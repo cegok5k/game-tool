@@ -35,3 +35,7 @@
   color: var(--text-tertiary);
   overflow: auto;
 }
+
+.content-pass {
+  padding: 0;
+}

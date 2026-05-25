@@ -90,6 +90,8 @@ bridge.connect({
   capabilities: ['canvas2d', 'hot-reload'],
 })
 
+bridge.notifyLog('info', 'TestGame connected with ' + Object.keys(state).length + ' entities')
+
 status.dataset.connected = 'true'
 status.textContent = '● Bridge connected'
 

@@ -4,6 +4,7 @@ import { useProjectStore } from '../../stores/projectStore'
 import { useBridgeStore } from '../../stores/bridgeStore'
 import { useSceneStore } from '../../stores/sceneStore'
 import { useEditorStore } from '../../stores/editorStore'
+import { useConsoleStore } from '../../stores/consoleStore'
 import { createBridgeClient, setActiveBridgeClient, type BridgeClient } from '../../bridge'
 import { CanvasToolbar } from '../canvas/CanvasToolbar'
 import { Gizmo } from '../canvas/gizmo/Gizmo'
@@ -18,6 +19,7 @@ export function CanvasPanel() {
   const upsertNode = useSceneStore((s) => s.upsertNode)
   const select = useEditorStore((s) => s.select)
   const selectedId = useEditorStore((s) => s.selectedId)
+  const addLogEntry = useConsoleStore((s) => s.addEntry)
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const clientRef = useRef<BridgeClient | null>(null)
@@ -51,7 +53,7 @@ export function CanvasPanel() {
             markError(msg.message)
             return
           case 'LOG':
-            // Plan 6: stream into Console panel
+            addLogEntry({ level: msg.level, message: msg.message })
             return
           case 'TRANSFORM_CHANGED': {
             const current = useSceneStore.getState().byId(msg.nodeId)
@@ -71,7 +73,7 @@ export function CanvasPanel() {
       setActiveBridgeClient(null)
       clientRef.current = null
     }
-  }, [gameUrl, markConnecting, markConnected, markError, setTree, upsertNode, select])
+  }, [gameUrl, markConnecting, markConnected, markError, setTree, upsertNode, select, addLogEntry])
 
   useEffect(() => {
     const client = clientRef.current
