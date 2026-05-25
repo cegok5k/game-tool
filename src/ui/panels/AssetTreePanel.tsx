@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import styles from './AssetTreePanel.module.css'
 import { useProjectStore } from '../../stores/projectStore'
 import { useAssetBrowserStore } from '../../stores/assetBrowserStore'
+import { useEditorStore } from '../../stores/editorStore'
 import { getPlatform } from '../../platform'
 import type { DirEntry, FolderHandle } from '../../types/platform'
 
@@ -99,13 +100,21 @@ function DirNode({ folder, entry, depth }: { folder: FolderHandle; entry: DirEnt
 function FileNode({ entry, depth }: { entry: DirEntry; depth: number }) {
   const selectedPath = useAssetBrowserStore((s) => s.selectedPath)
   const select = useAssetBrowserStore((s) => s.select)
+  const setActiveBottomTab = useEditorStore((s) => s.setActiveBottomTab)
+
+  function handleClick() {
+    select(entry.path)
+    if (entry.name.toLowerCase().endsWith('.json')) {
+      setActiveBottomTab('config')
+    }
+  }
 
   return (
     <div
       className={`${styles.row} ${styles.file}`}
       data-selected={selectedPath === entry.path}
       style={{ paddingLeft: 8 + depth * 14 + 14 }}
-      onClick={() => select(entry.path)}
+      onClick={handleClick}
     >
       <span className={styles.icon}>·</span>
       <span>{entry.name}</span>

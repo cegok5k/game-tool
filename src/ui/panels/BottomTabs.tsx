@@ -3,6 +3,7 @@ import { useEditorStore, type BottomTab } from '../../stores/editorStore'
 import { ConsolePanel } from './ConsolePanel'
 import { AssetTreePanel } from './AssetTreePanel'
 import { SettingsPanel } from './SettingsPanel'
+import { ConfigEditorPanel } from './ConfigEditorPanel'
 
 const TABS: readonly { id: BottomTab; label: string }[] = [
   { id: 'assets',   label: 'Assets' },
@@ -19,7 +20,8 @@ export function BottomTabs() {
   const isConsole = active === 'console'
   const isAssets = active === 'assets'
   const isSettings = active === 'settings'
-  const passThrough = isConsole || isAssets || isSettings
+  const isConfig = active === 'config'
+  const passThrough = isConsole || isAssets || isSettings || isConfig
 
   return (
     <>
@@ -41,6 +43,7 @@ export function BottomTabs() {
         {isConsole ? <ConsolePanel />
          : isAssets ? <AssetTreePanel />
          : isSettings ? <SettingsPanel />
+         : isConfig ? <ConfigEditorPanel />
          : <span>{placeholderFor(active)}</span>}
       </div>
     </>
@@ -50,7 +53,7 @@ export function BottomTabs() {
 function placeholderFor(tab: BottomTab): string {
   switch (tab) {
     case 'assets':   return ''
-    case 'config':   return 'Config editor — coming in a later plan.'
+    case 'config':   return ''
     case 'ai':       return 'AI Studio — coming in a later plan.'
     case 'console':  return ''
     case 'settings': return ''
