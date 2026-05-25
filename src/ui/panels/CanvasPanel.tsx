@@ -10,6 +10,7 @@ import { applyPatchBatch } from '../../spine/applyPatchBatch'
 import { getPlatform } from '../../platform'
 import type { BonePatch } from '../../spine/spineJsonTypes'
 import type { FolderHandle } from '../../types/platform'
+import type { Transform } from '../../types/scene'
 import { createBridgeClient, setActiveBridgeClient, type BridgeClient } from '../../bridge'
 import { CanvasToolbar } from '../canvas/CanvasToolbar'
 import { Gizmo } from '../canvas/gizmo/Gizmo'
@@ -50,6 +51,16 @@ async function flushPendingPatches(): Promise<void> {
       consoleStore.addEntry({ level: 'error', message: `Failed to save ${file}: ${message}` })
     }
   }
+}
+
+function diffTransform(prev: Transform, next: Transform): BonePatch {
+  const patch: BonePatch = {}
+  if (next.x !== prev.x) patch.x = next.x
+  if (next.y !== prev.y) patch.y = next.y
+  if (next.rotation !== prev.rotation) patch.rotation = next.rotation
+  if (next.scaleX !== prev.scaleX) patch.scaleX = next.scaleX
+  if (next.scaleY !== prev.scaleY) patch.scaleY = next.scaleY
+  return patch
 }
 
 export function CanvasPanel() {
@@ -103,12 +114,15 @@ export function CanvasPanel() {
             if (current !== undefined) {
               upsertNode({ ...current, transform: msg.transform })
               if (current.owner !== undefined) {
-                useSpinePatchStore.getState().enqueue(
-                  current.owner.skeletonFile,
-                  current.owner.boneName,
-                  msg.transform as BonePatch,
-                )
-                scheduleFlush()
+                const patch = diffTransform(current.transform, msg.transform)
+                if (Object.keys(patch).length > 0) {
+                  useSpinePatchStore.getState().enqueue(
+                    current.owner.skeletonFile,
+                    current.owner.boneName,
+                    patch,
+                  )
+                  scheduleFlush()
+                }
               }
             }
             return

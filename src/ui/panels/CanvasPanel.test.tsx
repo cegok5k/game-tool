@@ -263,7 +263,7 @@ describe('CanvasPanel', () => {
         window.dispatchEvent(new MessageEvent('message', {
           data: { __gameTool: 'bridge', v: 1, payload: {
             type: 'TRANSFORM_CHANGED', nodeId: 'bone-2',
-            transform: { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 },
+            transform: { x: 99, y: 0, rotation: 0, scaleX: 1, scaleY: 1 },
           }},
         }))
       })
@@ -280,7 +280,68 @@ describe('CanvasPanel', () => {
       const finalText = writeCalls[writeCalls.length - 1].text
       const parsed = JSON.parse(finalText) as { bones: Array<{ name: string; x?: number }> }
       expect(parsed.bones.find((b) => b.name === 'spinner_container')?.x).toBe(50)
-      expect(parsed.bones.find((b) => b.name === 'suspense_reel_3')?.x).toBe(0)
+      expect(parsed.bones.find((b) => b.name === 'suspense_reel_3')?.x).toBe(99)
+    } finally {
+      vi.useRealTimers()
+      __setPlatformForTests(null)
+    }
+  })
+
+  test('TRANSFORM_CHANGED with identical transform does not write to disk', async () => {
+    vi.useFakeTimers()
+    try {
+      const writeCalls: Array<{ path: string; text: string }> = []
+      __setPlatformForTests({
+        kind: 'browser',
+        fs: {
+          async openFolder() { return null },
+          async readFile() { return new Uint8Array() },
+          async readText() { return '{}' },
+          async writeFile(_h, path, data) { writeCalls.push({ path, text: new TextDecoder().decode(data) }) },
+          async listDir() { return [] },
+          watch() { return () => {} },
+        },
+        env: { get: () => undefined, has: () => false },
+        shell: { async openExternal() {} },
+        dialog: { async openFile() { return null }, async saveFile() { return null } },
+      })
+
+      useProjectStore.getState().setFolder({ name: 'big-bait', rootPath: 'big-bait', fsHandle: null })
+      useSpinePatchStore.getState().reset()
+      useConsoleStore.getState().clear()
+
+      const ownerNode: NodeSnapshot = {
+        id: 'bone-1',
+        kind: 'spine-bone',
+        name: 'spinner_container',
+        parentId: null,
+        childIds: [],
+        transform: { x: 50, y: -150, rotation: 0, scaleX: 1, scaleY: 1 },
+        bounds: null,
+        schema: [],
+        values: {},
+        owner: {
+          skeletonFile: 'media/skeletons_json/main_scene/main_scene/Skeleton.json',
+          boneName: 'spinner_container',
+        },
+      }
+      useSceneStore.getState().setTree([ownerNode])
+
+      render(<CanvasPanel />)
+
+      // Dispatch a TRANSFORM_CHANGED with identical values.
+      await act(async () => {
+        window.dispatchEvent(new MessageEvent('message', {
+          data: { __gameTool: 'bridge', v: 1, payload: {
+            type: 'TRANSFORM_CHANGED', nodeId: 'bone-1',
+            transform: { x: 50, y: -150, rotation: 0, scaleX: 1, scaleY: 1 },
+          }},
+        }))
+      })
+
+      await act(async () => { await vi.runAllTimersAsync() })
+
+      expect(writeCalls).toHaveLength(0)
     } finally {
       vi.useRealTimers()
       __setPlatformForTests(null)

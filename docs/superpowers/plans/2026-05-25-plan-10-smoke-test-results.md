@@ -19,7 +19,7 @@ Programmatic checks verified on **2026-05-25** from branch `worktree-plan-10-spi
 | Native Spine 4.2 JSON types | `src/spine/spineJsonTypes.ts` |
 | Pure immutable `patchBone` (throws on unknown bone) | `src/spine/patchBone.ts` |
 | `resolveSkeletonFile` — dotted-id → file path | `src/spine/resolveSkeletonFile.ts` |
-| `NodeSnapshot.owner` field plumbed through bridge SDK + test game | `src/bridge/protocol.ts`, `public/game/game.js` |
+| `NodeSnapshot.owner` field plumbed through bridge SDK + test game | `src/bridge/sdk.ts`, `public/test-game/game.js` |
 | `spinePatchStore` — batches bone patches per skeleton file | `src/stores/spinePatchStore.ts` |
 | `applyPatchBatch` — round-trips JSON text with indent preservation | `src/spine/applyPatchBatch.ts` |
 | `CanvasPanel` writeback wiring — TRANSFORM_CHANGED → enqueue → 300 ms debounce → disk write + race-safe timer clear | `src/ui/panels/CanvasPanel.tsx` |
@@ -32,7 +32,7 @@ Programmatic checks verified on **2026-05-25** from branch `worktree-plan-10-spi
 | Tests | 176 | 198 |
 | New tests added | — | +22 |
 
-New test files: `src/spine/patchBone.test.ts`, `src/spine/resolveSkeletonFile.test.ts`, `src/spine/applyPatchBatch.test.ts`, `src/stores/spinePatchStore.test.ts`, `src/ui/panels/CanvasPanel.test.ts` (partial — 8 tests total in the file, several are new), plus `src/ui/canvas/gizmo/useDragSession.test.ts` and `src/ui/panels/inspector/useDebouncedCallback.test.ts` (added in supporting tasks).
+New test files: `src/spine/patchBone.test.ts`, `src/spine/resolveSkeletonFile.test.ts`, `src/spine/applyPatchBatch.test.ts`, `src/stores/spinePatchStore.test.ts`, `src/ui/panels/CanvasPanel.test.tsx` (partial — 8 tests total in the file, several are new), plus `src/ui/canvas/gizmo/useDragSession.test.ts` and `src/ui/panels/inspector/useDebouncedCallback.test.ts` (added in supporting tasks).
 
 ## Manual UAT script — PENDING, TO BE RUN BY USER
 
