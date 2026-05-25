@@ -22,3 +22,6 @@ coverage
 .superpowers/
 public/bridge/
 .playwright-mcp/
+
+# Sample game projects pulled in for reference (not part of the editor itself)
+games-sample*
