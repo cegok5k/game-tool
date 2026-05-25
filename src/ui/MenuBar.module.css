@@ -25,3 +25,22 @@
   font-family: var(--font-mono);
   font-size: 11px;
 }
+.open-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-2);
+  font-size: var(--fs-chrome);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.open-btn:hover { background: var(--glass-2); color: var(--text-primary); }
+.select {
+  background: var(--glass-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px var(--sp-2);
+  font-size: var(--fs-chrome);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
