@@ -6,7 +6,7 @@ import { snapPoint, snapAngle } from './snap'
 import { sendToGame } from '../../../bridge'
 import { useEditorStore } from '../../../stores/editorStore'
 import { useSceneStore } from '../../../stores/sceneStore'
-import type { NodeSnapshot, Transform } from '../../../types/scene'
+import type { Bounds, NodeSnapshot, Transform } from '../../../types/scene'
 
 const THROTTLE_MS = 33
 const ANGLE_STEP_DEG = 15
@@ -19,23 +19,40 @@ function dispatchTransform(nodeId: string, partial: Partial<Transform>): void {
   sendToGame({ type: 'UPDATE_TRANSFORM', nodeId, transform: partial })
 }
 
+// Effective on-screen bounds for a node: width/height from the registered bounds,
+// but x/y tracked from the live transform so the gizmo follows TRANSFORM_CHANGED
+// updates even when the game's registered bounds metadata is static. For more
+// complex games (anchor-based positioning), the bridge will need a `getBounds`
+// callback so the SDK can re-snapshot — a future enhancement.
+function effectiveBounds(node: NodeSnapshot): Bounds | null {
+  if (node.bounds === null) return null
+  return {
+    x: node.transform.x,
+    y: node.transform.y,
+    width: node.bounds.width,
+    height: node.bounds.height,
+  }
+}
+
 export function Gizmo() {
   const selectedId = useEditorStore((s) => s.selectedId)
   const node = useSceneStore((s) => (selectedId === null ? undefined : s.byId(selectedId)))
   const svgRef = useRef<SVGSVGElement | null>(null)
 
   if (node === undefined || node.bounds === null) return null
+  const bounds = effectiveBounds(node)
+  if (bounds === null) return null
 
   return (
     <svg ref={svgRef} className={styles.svg}>
-      <MoveBox node={node} />
-      <ScaleHandles node={node} />
-      <RotateHandle node={node} />
+      <MoveBox node={node} bounds={bounds} />
+      <ScaleHandles node={node} bounds={bounds} />
+      <RotateHandle node={node} bounds={bounds} />
     </svg>
   )
 }
 
-function MoveBox({ node }: { node: NodeSnapshot }) {
+function MoveBox({ node, bounds }: { node: NodeSnapshot; bounds: Bounds }) {
   const snapEnabled = useEditorStore((s) => s.snapEnabled)
   const gridSize = useEditorStore((s) => s.gridSize)
   const startRef = useRef<Transform | null>(null)
@@ -66,15 +83,13 @@ function MoveBox({ node }: { node: NodeSnapshot }) {
     session.begin({ x: e.clientX, y: e.clientY })
   }
 
-  if (node.bounds === null) return null
-  const b = node.bounds
   return (
     <rect
       className={styles.box}
-      x={b.x}
-      y={b.y}
-      width={b.width}
-      height={b.height}
+      x={bounds.x}
+      y={bounds.y}
+      width={bounds.width}
+      height={bounds.height}
       aria-label="Move handle"
       onPointerDown={onPointerDown}
       onPointerMove={(e) => session.move({ x: e.clientX, y: e.clientY })}
@@ -88,28 +103,27 @@ function MoveBox({ node }: { node: NodeSnapshot }) {
   )
 }
 
-function ScaleHandles({ node }: { node: NodeSnapshot }) {
-  const startRef = useRef<{ transform: Transform; bounds: NonNullable<NodeSnapshot['bounds']>; handleId: HandleId } | null>(null)
+function ScaleHandles({ node, bounds }: { node: NodeSnapshot; bounds: Bounds }) {
+  const startRef = useRef<{ transform: Transform; bounds: Bounds; handleId: HandleId } | null>(null)
 
   function dispatchScaleFromHandle(info: DragInfo) {
     const start = startRef.current
     if (start === null) return
-    const { transform, bounds, handleId } = start
+    const { transform, bounds: startBounds, handleId } = start
     const isLeft = handleId === 'nw' || handleId === 'w' || handleId === 'sw'
     const isTop  = handleId === 'nw' || handleId === 'n' || handleId === 'ne'
     const isHorizOnly = handleId === 'e' || handleId === 'w'
     const isVertOnly  = handleId === 'n' || handleId === 's'
     const dx = info.dx * (isLeft ? -1 : 1)
     const dy = info.dy * (isTop  ? -1 : 1)
-    const newW = isVertOnly  ? bounds.width  : Math.max(1, bounds.width  + dx)
-    const newH = isHorizOnly ? bounds.height : Math.max(1, bounds.height + dy)
-    const scaleX = transform.scaleX * (newW / bounds.width)
-    const scaleY = transform.scaleY * (newH / bounds.height)
+    const newW = isVertOnly  ? startBounds.width  : Math.max(1, startBounds.width  + dx)
+    const newH = isHorizOnly ? startBounds.height : Math.max(1, startBounds.height + dy)
+    const scaleX = transform.scaleX * (newW / startBounds.width)
+    const scaleY = transform.scaleY * (newH / startBounds.height)
     dispatchTransform(node.id, { scaleX, scaleY })
   }
 
-  if (node.bounds === null) return null
-  const handles = handlePositions(node.bounds).filter((h) => h.id !== 'rotate')
+  const handles = handlePositions(bounds).filter((h) => h.id !== 'rotate')
 
   return (
     <>
@@ -120,7 +134,7 @@ function ScaleHandles({ node }: { node: NodeSnapshot }) {
           y={h.y}
           handleId={h.id}
           onBegin={(p) => {
-            startRef.current = { transform: node.transform, bounds: node.bounds!, handleId: h.id }
+            startRef.current = { transform: node.transform, bounds, handleId: h.id }
             return p
           }}
           onMove={dispatchScaleFromHandle}
@@ -177,7 +191,7 @@ function ScaleHandleRect({
   )
 }
 
-function RotateHandle({ node }: { node: NodeSnapshot }) {
+function RotateHandle({ node, bounds }: { node: NodeSnapshot; bounds: Bounds }) {
   const snapEnabled = useEditorStore((s) => s.snapEnabled)
   const startRef = useRef<{ transform: Transform; centerX: number; centerY: number; startAngle: number } | null>(null)
 
@@ -196,12 +210,11 @@ function RotateHandle({ node }: { node: NodeSnapshot }) {
     onCommit: ({ to }) => apply(to),
   })
 
-  if (node.bounds === null) return null
-  const handles = handlePositions(node.bounds)
+  const handles = handlePositions(bounds)
   const rotate = handles.find((h) => h.id === 'rotate')!
   const top = handles.find((h) => h.id === 'n')!
-  const centerX = node.bounds.x + node.bounds.width / 2
-  const centerY = node.bounds.y + node.bounds.height / 2
+  const centerX = bounds.x + bounds.width / 2
+  const centerY = bounds.y + bounds.height / 2
 
   function onPointerDown(e: ReactPointerEvent<SVGCircleElement>) {
     if (e.button !== 0) return

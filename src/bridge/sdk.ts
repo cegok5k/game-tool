@@ -114,6 +114,9 @@ export function createBridge(): Bridge {
           // Notify the game so it can apply the transform visually.
           // The transform fields (x, y, rotation, scaleX, scaleY) flow into set() as a prop bag.
           node.set(msg.transform as Record<string, unknown>)
+          // Echo the resolved transform back to the editor so its sceneStore stays in sync
+          // (the gizmo redraws at the new bounds, the Inspector reflects the new values).
+          send({ type: 'TRANSFORM_CHANGED', nodeId: msg.nodeId, transform: node.transform })
         }
         return
       }
