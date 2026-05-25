@@ -7,6 +7,9 @@ export function patchBone(
   patch: BonePatch,
 ): SpineSkeletonJson {
   const bones = json.bones ?? []
+  if (!bones.some((b) => b.name === boneName)) {
+    throw new Error(`patchBone: bone "${boneName}" not found in skeleton`)
+  }
   const next = bones.map((b) => (b.name === boneName ? { ...b, ...patch } : b))
   return { ...json, bones: next }
 }
